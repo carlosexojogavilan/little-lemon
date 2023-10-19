@@ -7,6 +7,8 @@ import {
   Pressable,
 } from "react-native";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { Formik } from "formik";
 
 const RegisterForm = () => {
@@ -27,7 +29,13 @@ const RegisterForm = () => {
     return errors;
   };
 
-  const handleRegister = (values) => {
+  const handleRegister = async (values) => {
+    const keyValuePairs = Object.entries(values);
+    try {
+      await AsyncStorage.multiSet(keyValuePairs, (error) => console.log(error));
+    } catch (error) {
+      console.log(error);
+    }
     console.log(values);
   };
 
@@ -72,7 +80,7 @@ const RegisterForm = () => {
             )}
           </View>
           <Pressable
-            style={styles.btn}
+            style={[styles.btn, { opacity: isValid ? 1 : 0.5 }]}
             onPress={handleSubmit}
             disabled={!isValid}
           >
