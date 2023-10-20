@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Text,
   TextInput,
@@ -5,18 +6,45 @@ import {
   KeyboardAvoidingView,
   View,
   Pressable,
+  Image,
 } from "react-native";
-
-import Checkbox from "expo-checkbox";
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { Formik } from "formik";
-import { useEffect } from "react";
-import { useState } from "react";
+import profilePic from "../assets/images/Profile.png";
 
-const RegisterForm = () => {
+import { Formik } from "formik";
+import Checkbox from "expo-checkbox";
+import * as ImagePicker from "expo-image-picker";
+
+/*
+To implement this perfectly I should mask the phone input - there is a lib
+Back Button - Check previous course lessons
+Profile Image - There is a lib to
+Persist checkboxes and avatar
+Log Out button
+*/
+const RegisterForm = ({ changeProfilePic }) => {
   const [FormInitialData, setFormInitialData] = useState({});
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setFormInitialData({
+        ...FormInitialData,
+        profilePic: result.assets[0].uri,
+      });
+      changeProfilePic(result.assets[0].uri);
+    }
+  };
 
   const getCurrentData = async () => {
     let values;
@@ -26,6 +54,7 @@ const RegisterForm = () => {
         "lastName",
         "email",
         "phone",
+        "profilePic",
       ]);
     } catch (error) {
       console.log(error);
@@ -36,7 +65,6 @@ const RegisterForm = () => {
       formData[keyValuePair[0]] = keyValuePair[1];
     });
     setFormInitialData(formData);
-    console.log(FormInitialData);
   };
 
   useEffect(() => {
@@ -77,17 +105,66 @@ const RegisterForm = () => {
 
   const handleRegister = async (values) => {
     const keyValuePairs = Object.entries(values);
+    if (FormInitialData.profilePic)
+      keyValuePairs.push(["profilePic", `${FormInitialData.profilePic}`]);
     try {
       await AsyncStorage.multiSet(keyValuePairs, (error) => console.log(error));
     } catch (error) {
       console.log(error);
     }
-    console.log(values);
+    console.log(keyValuePairs);
   };
 
   return (
     <>
+      <Text
+        style={{
+          marginVertical: 12,
+          fontSize: 16,
+          fontWeight: "500",
+          color: "#333333",
+        }}
+      >
+        Avatar
+      </Text>
+      <View style={styles.btnContainer}>
+        {FormInitialData.profilePic ? (
+          <Image
+            source={{ uri: FormInitialData.profilePic }}
+            alt="Profile Pic"
+            style={styles.profilePic}
+          ></Image>
+        ) : (
+          <Image
+            source={profilePic}
+            alt="Profile Pic"
+            style={styles.profilePic}
+          ></Image>
+        )}
+        <Pressable style={[styles.btn]} onPress={pickImage}>
+          <Text style={styles.btnText}>Change</Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.btn,
+            {
+              backgroundColor: "transparent",
+              borderWidth: 2,
+              borderColor: "#495E57",
+            },
+          ]}
+          onPress={() => {
+            const { profilePic, ...rest } = FormInitialData;
+            console.log(rest);
+            setFormInitialData(rest);
+            changeProfilePic("");
+          }}
+        >
+          <Text style={[styles.btnText, { color: "#495E57" }]}>Remove</Text>
+        </Pressable>
+      </View>
       <Formik
+        enableReinitialize
         initialValues={{
           firstName: FormInitialData.firstName,
           lastName: FormInitialData.lastName,
@@ -208,7 +285,7 @@ const RegisterForm = () => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    gap: 12,
+    gap: 8,
     marginVertical: 20,
     backgroundColor: "white",
   },
@@ -216,16 +293,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#333333",
-    marginBottom: 10,
-    marginTop: 20,
+    marginBottom: 12,
   },
   label: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "500",
     color: "#333333",
   },
   input: {
-    fontSize: 20,
+    fontSize: 16,
     borderWidth: 2,
     borderColor: "gray",
     borderRadius: 10,
@@ -235,13 +311,14 @@ const styles = StyleSheet.create({
   },
   btnContainer: {
     flexDirection: "row",
-    gap: 10,
+    gap: 15,
     justifyContent: "center",
+    alignItems: "center",
   },
   btn: {
     backgroundColor: "#495E57",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
     marginTop: 8,
     borderRadius: 10,
   },
@@ -257,6 +334,10 @@ const styles = StyleSheet.create({
   checkboxContainer: {
     flexDirection: "row",
     gap: 10,
+  },
+  profilePic: {
+    height: 70,
+    width: 70,
   },
 });
 

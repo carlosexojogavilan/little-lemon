@@ -11,7 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Formik } from "formik";
 
-const RegisterForm = () => {
+const RegisterForm = ({ goToProfile }) => {
   const validateForm = ({ firstName, email }) => {
     const errors = {};
 
@@ -33,10 +33,10 @@ const RegisterForm = () => {
     const keyValuePairs = Object.entries(values);
     try {
       await AsyncStorage.multiSet(keyValuePairs, (error) => console.log(error));
+      goToProfile();
     } catch (error) {
       console.log(error);
     }
-    console.log(values);
   };
 
   return (

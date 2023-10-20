@@ -8,6 +8,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Home from "./screens/Home";
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +39,17 @@ export default function App() {
     setIsLoading(false);
   };
 
+  const handleLogOut = async () => {
+    const keys = ["firstName", "lastName", "email", "phone", "profilePic"];
+    try {
+      await AsyncStorage.multiRemove(keys);
+      setIsSignedIn(false);
+    } catch (e) {
+      console.log(e);
+    }
+    console.log("done");
+  };
+
   useEffect(() => {
     getIsSignedIn();
   }, []);
@@ -54,9 +66,18 @@ export default function App() {
         }}
       >
         {isSignedIn ? (
-          <Stack.Screen name="Profile" component={Profile} />
+          <>
+            <Stack.Screen name="Home" component={Home} />
+            <Stack.Screen name="Profile">
+              {(props) => <Profile {...props} onLogout={handleLogOut} />}
+            </Stack.Screen>
+          </>
         ) : (
-          <Stack.Screen name="Onboarding" component={Onboarding} />
+          <Stack.Screen name="Onboarding">
+            {(props) => (
+              <Onboarding {...props} signIn={() => setIsSignedIn(true)} />
+            )}
+          </Stack.Screen>
         )}
       </Stack.Navigator>
     </NavigationContainer>

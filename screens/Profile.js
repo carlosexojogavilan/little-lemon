@@ -1,16 +1,37 @@
 import { SafeAreaView, View, Text, StyleSheet, Pressable } from "react-native";
 import Header from "../components/Header";
 import ProfileInfoForm from "../components/ProfileInfoForm";
-import profilePic from "../assets/images/Profile.png";
+import { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const Profile = () => {
+const Profile = ({ onLogout }) => {
+  const [profilePic, setProfilePic] = useState();
+
+  const changeProfilePic = (newPic) => {
+    setProfilePic(newPic);
+  };
+
+  useEffect(() => {
+    const getProfilePic = async () => {
+      try {
+        const value = await AsyncStorage.getItem("profilePic");
+        if (value !== null) {
+          setProfilePic(value);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    getProfilePic();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <Header profileImg={profilePic} />
       <View style={styles.infoContainer}>
         <Text style={styles.title}>Personal Information</Text>
-        <ProfileInfoForm />
-        <Pressable style={styles.btn}>
+        <ProfileInfoForm changeProfilePic={changeProfilePic} />
+        <Pressable style={styles.btn} onPress={onLogout}>
           <Text style={styles.btnText}>Log Out</Text>
         </Pressable>
       </View>
@@ -32,13 +53,12 @@ const styles = StyleSheet.create({
   infoContainer: {
     width: "100%",
     paddingHorizontal: 20,
-    paddingTop: 20,
     flex: 1,
   },
   btn: {
     backgroundColor: "#f4ce14",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
     marginTop: "auto",
     borderRadius: 10,
     borderWidth: 2,

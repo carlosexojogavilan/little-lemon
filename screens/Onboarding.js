@@ -3,12 +3,16 @@ import RegisterForm from "../components/RegisterForm";
 
 import { Text, StyleSheet, SafeAreaView } from "react-native";
 
-const Onboarding = () => {
+const Onboarding = ({ signIn }) => {
+  const goToProfile = () => {
+    console.log("Hola");
+    signIn();
+  };
   return (
     <SafeAreaView style={styles.container}>
       <Header />
       <Text style={styles.title}>Let us get to know you</Text>
-      <RegisterForm />
+      <RegisterForm goToProfile={goToProfile} />
     </SafeAreaView>
   );
 };
