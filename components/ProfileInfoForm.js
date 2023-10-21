@@ -16,26 +16,16 @@ import { Formik } from "formik";
 import Checkbox from "expo-checkbox";
 import * as ImagePicker from "expo-image-picker";
 
-/*
-To implement this perfectly I should mask the phone input - there is a lib
-Back Button - Check previous course lessons
-Profile Image - There is a lib to
-Persist checkboxes and avatar
-Log Out button
-*/
 const RegisterForm = ({ changeProfilePic }) => {
   const [FormInitialData, setFormInitialData] = useState({});
 
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
-
-    console.log(result);
 
     if (!result.canceled) {
       setFormInitialData({

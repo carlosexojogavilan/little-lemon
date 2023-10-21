@@ -1,8 +1,8 @@
 import { SafeAreaView, View, Text, StyleSheet, Pressable } from "react-native";
-import Header from "../components/Header";
+import SignedInHeader from "../components/SignedInHeader";
 import ProfileInfoForm from "../components/ProfileInfoForm";
 import { useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import getProfilePic from "../utils/getProfilePic";
 
 const Profile = ({ onLogout }) => {
   const [profilePic, setProfilePic] = useState();
@@ -12,22 +12,17 @@ const Profile = ({ onLogout }) => {
   };
 
   useEffect(() => {
-    const getProfilePic = async () => {
-      try {
-        const value = await AsyncStorage.getItem("profilePic");
-        if (value !== null) {
-          setProfilePic(value);
-        }
-      } catch (e) {
-        console.log(e);
-      }
+    const fetchProfilePic = async () => {
+      const pic = await getProfilePic();
+      setProfilePic(pic);
     };
-    getProfilePic();
+
+    fetchProfilePic();
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header profileImg={profilePic} />
+      <SignedInHeader profilePic={profilePic} />
       <View style={styles.infoContainer}>
         <Text style={styles.title}>Personal Information</Text>
         <ProfileInfoForm changeProfilePic={changeProfilePic} />

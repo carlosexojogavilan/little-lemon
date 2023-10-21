@@ -5,7 +5,6 @@ import { Text, StyleSheet, SafeAreaView } from "react-native";
 
 const Onboarding = ({ signIn }) => {
   const goToProfile = () => {
-    console.log("Hola");
     signIn();
   };
   return (
@@ -20,13 +19,13 @@ const Onboarding = ({ signIn }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#EDEFEE",
+    backgroundColor: "white",
     alignItems: "center",
   },
   title: {
     marginTop: 60,
     fontSize: 30,
-    fontWeight: "500",
+    fontWeight: "600",
     color: "#333333",
   },
 });

@@ -54,7 +54,7 @@ const RegisterForm = ({ goToProfile }) => {
         touched,
         isValid,
       }) => (
-        <KeyboardAvoidingView style={styles.container} behavior="height">
+        <KeyboardAvoidingView style={styles.container} behavior="padding">
           <View style={styles.inputContainer}>
             <Text style={styles.label}>First Name</Text>
             <TextInput
@@ -97,7 +97,6 @@ const styles = StyleSheet.create({
     width: "100%",
     flex: 1,
     alignItems: "center",
-    // justifyContent: "center",
     gap: 12,
     paddingHorizontal: 40,
     marginVertical: 40,

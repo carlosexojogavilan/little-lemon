@@ -4,13 +4,15 @@ import heroImage from "../assets/images/HeroImage.png";
 const HeroSection = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Little Lemon</Text>
-      <Text style={styles.subtitle}>Chicago</Text>
       <View style={styles.textImageContainer}>
-        <Text style={styles.text}>
-          We are a little family owned Mediterranean restaurant, focused on
-          traditional recipies served with a modern twist.
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>Little Lemon</Text>
+          <Text style={styles.subtitle}>Chicago</Text>
+          <Text style={styles.text}>
+            We are a little family owned Mediterranean restaurant, focused on
+            traditional recipies served with a modern twist.
+          </Text>
+        </View>
         <Image source={heroImage} style={styles.image}></Image>
       </View>
       <TextInput style={styles.input}></TextInput>
@@ -38,13 +40,13 @@ const styles = StyleSheet.create({
   },
   textImageContainer: {
     flexDirection: "row",
+    alignItems: "center",
     gap: 20,
     marginBottom: 10,
   },
   text: {
     color: "white",
     fontWeight: "500",
-    flex: 1,
   },
   image: {
     height: 80,

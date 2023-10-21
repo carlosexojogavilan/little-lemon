@@ -1,5 +1,4 @@
 import {
-  Pressable,
   SafeAreaView,
   Text,
   FlatList,
@@ -7,17 +6,21 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
-import Header from "../components/Header";
-import CategortyList from "../components/CategoryList";
-import HeroSection from "../components/HeroSection";
 import { useEffect, useState } from "react";
+
+import SignedInHeader from "../components/SignedInHeader";
+import getProfilePic from "../utils/getProfilePic";
+import HeroSection from "../components/HeroSection";
+import CategortyList from "../components/CategoryList";
+
 import * as SQLite from "expo-sqlite";
 
 const db = SQLite.openDatabase("little_lemon.db");
 
-const Home = ({ navigation }) => {
+const Home = () => {
   const [menu, setMenu] = useState([]);
   const [menuImages, setMenuImages] = useState({});
+  const [profilePic, setProfilePic] = useState();
 
   const fetchData = async () => {
     try {
@@ -37,39 +40,38 @@ const Home = ({ navigation }) => {
         })
       );
       setMenuImages(images);
-      // Insert menu items into SQLite database
-      db.transaction((tx) => {
-        tx.executeSql(
-          `CREATE TABLE IF NOT EXISTS items_menu (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            description TEXT NOT NULL,
-            price REAL NOT NULL,
-            image TEXT NOT NULL
-          );`
-        );
-        data.menu.forEach((menuItem) => {
-          tx.executeSql(
-            `INSERT INTO items_menu (name, description, price, image) VALUES (?, ?, ?, ?);`,
-            [
-              menuItem.name,
-              menuItem.description,
-              menuItem.price,
-              menuItem.image,
-            ],
-            (_, result) =>
-              console.log(`Inserted ${menuItem.name} into items_menu table`),
-            (_, error) =>
-              console.log(
-                `Error inserting ${menuItem.name} into items_menu table: ${error}`
-              )
-          );
-        });
-      });
+      // insertIntoSqlite();
     } catch (error) {
       console.log(error);
     }
   };
+
+  // const insertIntoSqlite = () => {
+  //   // Insert menu items into SQLite database
+  //   db.transaction((tx) => {
+  //     tx.executeSql(
+  //       `CREATE TABLE IF NOT EXISTS items_menu (
+  //           id INTEGER PRIMARY KEY AUTOINCREMENT,
+  //           name TEXT NOT NULL,
+  //           description TEXT NOT NULL,
+  //           price REAL NOT NULL,
+  //           image TEXT NOT NULL
+  //         );`
+  //     );
+  //     data.menu.forEach((menuItem) => {
+  //       tx.executeSql(
+  //         `INSERT INTO items_menu (name, description, price, image) VALUES (?, ?, ?, ?);`,
+  //         [menuItem.name, menuItem.description, menuItem.price, menuItem.image],
+  //         (_, result) =>
+  //           console.log(`Inserted ${menuItem.name} into items_menu table`),
+  //         (_, error) =>
+  //           console.log(
+  //             `Error inserting ${menuItem.name} into items_menu table: ${error}`
+  //           )
+  //       );
+  //     });
+  //   });
+  // };
 
   // const loadMenuFromDatabase = () => {
   //   db.transaction((tx) => {
@@ -78,6 +80,7 @@ const Home = ({ navigation }) => {
   //       [],
   //       (_, result) => {
   //         const data = result.rows._array;
+  //         console.log(data);
   //         setMenu(data);
   //         const images = {};
   //         data.forEach((menuItem) => {
@@ -91,22 +94,31 @@ const Home = ({ navigation }) => {
   // };
 
   useEffect(() => {
-    //   db.transaction((tx) => {
-    //     tx.executeSql(
-    //       `SELECT COUNT(*) FROM items_menu;`,
-    //       [],
-    //       (_, result) => {
-    //         const count = result.rows._array[0]["COUNT(*)"];
-    //         if (count === 0) {
+    const fetchProfilePic = async () => {
+      const pic = await getProfilePic();
+      setProfilePic(pic);
+    };
+
+    fetchProfilePic();
     fetchData();
-    //         } else {
-    //           loadMenuFromDatabase();
-    //         }
-    //       },
-    //       (_, error) =>
-    //         console.log(`Error checking if items_menu table is empty: ${error}`)
-    //     );
-    //   });
+    // db.transaction((tx) => {
+    //   tx.executeSql(
+    //     `SELECT COUNT(*) FROM items_menu;`,
+    //     [],
+    //     (_, result) => {
+    //       const count = result.rows._array[0]["COUNT(*)"];
+    //       if (count === 0) {
+    //         console.log("Heyy");
+    //         fetchData();
+    //       } else {
+    //         console.log("UOOOOOOO");
+    //         loadMenuFromDatabase();
+    //       }
+    //     },
+    //     (_, error) =>
+    //       console.log(`Error checking if items_menu table is empty: ${error}`)
+    //   );
+    // });
   }, []);
 
   const Item = ({ item }) => {
@@ -126,7 +138,7 @@ const Home = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
+      <SignedInHeader profilePic={profilePic} />
       <HeroSection />
       <CategortyList />
       <FlatList
@@ -139,6 +151,9 @@ const Home = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   itemContainer: {
     flexDirection: "row",
     gap: 10,
@@ -146,6 +161,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderBottomWidth: 1,
     borderBottomColor: "gray",
+    flex: 1,
   },
   itemInfoContainer: {
     paddingHorizontal: 12,
