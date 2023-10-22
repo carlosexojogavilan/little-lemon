@@ -15,7 +15,6 @@ const HeroSection = () => {
         </View>
         <Image source={heroImage} style={styles.image}></Image>
       </View>
-      <TextInput style={styles.input}></TextInput>
     </View>
   );
 };

@@ -13,6 +13,15 @@ import getProfilePic from "../utils/getProfilePic";
 import HeroSection from "../components/HeroSection";
 import CategortyList from "../components/CategoryList";
 
+import Pasta from "../assets/images/Pasta.png";
+
+const images = {
+  "Greek Salad": require("../assets/images/greekSalad.jpg"),
+  Bruschetta: require("../assets/images/greekSalad.jpg"),
+  "Grilled Fish": require("../assets/images/greekSalad.jpg"),
+  Pasta: require("../assets/images/greekSalad.jpg"),
+  "Lemon Dessert": require("../assets/images/greekSalad.jpg"),
+};
 import * as SQLite from "expo-sqlite";
 
 const db = SQLite.openDatabase("little_lemon.db");
@@ -21,6 +30,7 @@ const Home = () => {
   const [menu, setMenu] = useState([]);
   const [menuImages, setMenuImages] = useState({});
   const [profilePic, setProfilePic] = useState();
+  const [activeCategories, setActiveCategories] = useState([]);
 
   const fetchData = async () => {
     try {
@@ -29,99 +39,107 @@ const Home = () => {
       );
       const data = await response.json();
       setMenu(data.menu);
-      const images = {};
-      await Promise.all(
-        data.menu.map(async (menuItem) => {
-          const response = await fetch(
-            `https://github.com/Meta-Mobile-Developer-PC/Working-With-Data-API/blob/main/images/${menuItem.image}?raw=true`
-          );
-          const blob = await response.blob();
-          images[menuItem.name] = URL.createObjectURL(blob);
-        })
-      );
-      setMenuImages(images);
-      // insertIntoSqlite();
+      insertIntoSqlite(data);
     } catch (error) {
       console.log(error);
     }
   };
 
-  // const insertIntoSqlite = () => {
-  //   // Insert menu items into SQLite database
-  //   db.transaction((tx) => {
-  //     tx.executeSql(
-  //       `CREATE TABLE IF NOT EXISTS items_menu (
-  //           id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //           name TEXT NOT NULL,
-  //           description TEXT NOT NULL,
-  //           price REAL NOT NULL,
-  //           image TEXT NOT NULL
-  //         );`
-  //     );
-  //     data.menu.forEach((menuItem) => {
-  //       tx.executeSql(
-  //         `INSERT INTO items_menu (name, description, price, image) VALUES (?, ?, ?, ?);`,
-  //         [menuItem.name, menuItem.description, menuItem.price, menuItem.image],
-  //         (_, result) =>
-  //           console.log(`Inserted ${menuItem.name} into items_menu table`),
-  //         (_, error) =>
-  //           console.log(
-  //             `Error inserting ${menuItem.name} into items_menu table: ${error}`
-  //           )
-  //       );
-  //     });
-  //   });
-  // };
+  const insertIntoSqlite = (data) => {
+    // Insert menu items into SQLite database
+    db.transaction((tx) => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS items_menu (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            price REAL NOT NULL,
+            category TEXT NOT NULL
+          );`
+      );
+      data.menu.forEach((menuItem) => {
+        tx.executeSql(
+          `INSERT INTO items_menu (name, description, price, category) VALUES (?, ?, ?, ?);`,
+          [
+            menuItem.name,
+            menuItem.description,
+            menuItem.price,
+            menuItem.category,
+          ],
+          (_, result) =>
+            console.log(`Inserted ${menuItem.name} into items_menu table`),
+          (_, error) =>
+            console.log(
+              `Error inserting ${menuItem.name} into items_menu table: ${error}`
+            )
+        );
+      });
+    });
+  };
 
-  // const loadMenuFromDatabase = () => {
-  //   db.transaction((tx) => {
-  //     tx.executeSql(
-  //       `SELECT * FROM items_menu;`,
-  //       [],
-  //       (_, result) => {
-  //         const data = result.rows._array;
-  //         console.log(data);
-  //         setMenu(data);
-  //         const images = {};
-  //         data.forEach((menuItem) => {
-  //           images[menuItem.name] = menuItem.image;
-  //         });
-  //         setMenuImages(images);
-  //       },
-  //       (_, error) => console.log(`Error loading menu from database: ${error}`)
-  //     );
-  //   });
-  // };
+  const loadMenuFromDatabase = () => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT * FROM items_menu;`,
+        [],
+        (_, result) => {
+          const data = result.rows._array;
+          setMenu(data);
+        },
+        (_, error) => console.log(`Error loading menu from database: ${error}`)
+      );
+    });
+  };
 
   useEffect(() => {
     const fetchProfilePic = async () => {
       const pic = await getProfilePic();
       setProfilePic(pic);
     };
-
     fetchProfilePic();
-    fetchData();
-    // db.transaction((tx) => {
-    //   tx.executeSql(
-    //     `SELECT COUNT(*) FROM items_menu;`,
-    //     [],
-    //     (_, result) => {
-    //       const count = result.rows._array[0]["COUNT(*)"];
-    //       if (count === 0) {
-    //         console.log("Heyy");
-    //         fetchData();
-    //       } else {
-    //         console.log("UOOOOOOO");
-    //         loadMenuFromDatabase();
-    //       }
-    //     },
-    //     (_, error) =>
-    //       console.log(`Error checking if items_menu table is empty: ${error}`)
-    //   );
-    // });
+
+    db.transaction((tx) => {
+      tx.executeSql(
+        `SELECT COUNT(*) FROM items_menu;`,
+        [],
+        (_, result) => {
+          const count = result.rows._array[0]["COUNT(*)"];
+          if (count === 0) {
+            fetchData();
+          } else {
+            loadMenuFromDatabase();
+          }
+        },
+        (_, error) =>
+          console.log(`Error checking if items_menu table is empty: ${error}`)
+      );
+    });
   }, []);
 
+  useEffect(() => {
+    if (activeCategories.length !== 0) {
+      console.log("activecatchanged");
+      db.transaction((tx) => {
+        tx.executeSql(
+          `SELECT * FROM items_menu WHERE category IN (${activeCategories
+            .map(() => "?")
+            .join(", ")})`,
+          activeCategories,
+          (_, result) => {
+            const data = result.rows._array;
+            setMenu(data);
+          },
+          (_, error) =>
+            console.log(`Error loading menu items from database: ${error}`)
+        );
+      });
+    } else {
+      loadMenuFromDatabase();
+    }
+  }, [activeCategories]);
+
   const Item = ({ item }) => {
+    const source = images[item.name];
     return (
       <View style={styles.itemContainer}>
         <View style={styles.itemInfoContainer}>
@@ -130,7 +148,12 @@ const Home = () => {
           <Text style={styles.price}>${item.price}</Text>
         </View>
         <View>
-          <Image style={styles.image} source={{ uri: menuImages[item.name] }} />
+          <Image
+            style={styles.image}
+            source={{
+              Pasta,
+            }}
+          />
         </View>
       </View>
     );
@@ -140,7 +163,11 @@ const Home = () => {
     <SafeAreaView style={styles.container}>
       <SignedInHeader profilePic={profilePic} />
       <HeroSection />
-      <CategortyList />
+      <CategortyList
+        setActiveCategories={(newCategories) => {
+          setActiveCategories(newCategories);
+        }}
+      />
       <FlatList
         data={menu}
         renderItem={({ item }) => <Item item={item} />}

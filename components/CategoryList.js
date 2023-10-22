@@ -1,27 +1,53 @@
+import { useState } from "react";
+import { useEffect } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
-const CategortyList = () => {
-  const categories = [
+const CategoryList = ({ setActiveCategories }) => {
+  const [categories, setCategories] = useState([
     {
-      name: "Starters",
+      name: "starters",
+      active: false,
     },
     {
-      name: "Mains",
+      name: "mains",
+      active: false,
     },
     {
-      name: "Desserts",
+      name: "desserts",
+      active: false,
     },
     {
-      name: "Drinks",
+      name: "drinks",
+      active: false,
     },
     {
-      name: "Specials",
+      name: "specials",
+      active: false,
     },
-  ];
+  ]);
 
-  const Category = ({ item }) => (
-    <Pressable style={styles.categoryContainer}>
-      <Text style={styles.text}>{item.name}</Text>
+  useEffect(() => {
+    const activeCategories = categories
+      .filter((category) => category.active)
+      .map((category) => category.name);
+    setActiveCategories(activeCategories);
+  }, [categories]);
+
+  const Category = ({ item, index }) => (
+    <Pressable
+      style={[
+        styles.categoryContainer,
+        item.active && styles.activeCategoryContainer,
+      ]}
+      onPress={() => {
+        const newCategories = [...categories];
+        newCategories[index].active = !newCategories[index].active;
+        setCategories(newCategories);
+      }}
+    >
+      <Text style={[styles.text, item.active && styles.activeText]}>
+        {item.name}
+      </Text>
     </Pressable>
   );
 
@@ -30,8 +56,8 @@ const CategortyList = () => {
       <Text style={styles.title}>ORDER FOR DELIVERY!</Text>
       <FlatList
         data={categories}
-        renderItem={({ item }) => <Category item={item} />}
-        keyExtractor={(item, index) => index}
+        renderItem={({ item, index }) => <Category item={item} index={index} />}
+        keyExtractor={(item, index) => index.toString()}
         horizontal
         showsHorizontalScrollIndicator={false}
       />
@@ -53,6 +79,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 12,
   },
+  activeCategoryContainer: {
+    backgroundColor: "black",
+  },
   title: {
     fontSize: 18,
     fontWeight: "700",
@@ -61,6 +90,11 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: "600",
     fontSize: 16,
+    color: "black",
+  },
+  activeText: {
+    color: "white",
   },
 });
-export default CategortyList;
+
+export default CategoryList;
