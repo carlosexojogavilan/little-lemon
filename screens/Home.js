@@ -13,22 +13,21 @@ import getProfilePic from "../utils/getProfilePic";
 import HeroSection from "../components/HeroSection";
 import CategortyList from "../components/CategoryList";
 
-import Pasta from "../assets/images/Pasta.png";
-
-const images = {
-  "Greek Salad": require("../assets/images/greekSalad.jpg"),
-  Bruschetta: require("../assets/images/greekSalad.jpg"),
-  "Grilled Fish": require("../assets/images/greekSalad.jpg"),
-  Pasta: require("../assets/images/greekSalad.jpg"),
-  "Lemon Dessert": require("../assets/images/greekSalad.jpg"),
-};
 import * as SQLite from "expo-sqlite";
+
+import GreekSalad from "../assets/images/greekSalad.jpg";
+import Bruschetta from "../assets/images/bruschetta.jpg";
+import GrilledFish from "../assets/images/grilledFish.jpg";
+import Pasta from "../assets/images/pasta.jpg";
+import LemonDessert from "../assets/images/lemonDessert.jpg";
+
+const images = [GreekSalad, Bruschetta, GrilledFish, Pasta, LemonDessert];
 
 const db = SQLite.openDatabase("little_lemon.db");
 
 const Home = () => {
   const [menu, setMenu] = useState([]);
-  const [menuImages, setMenuImages] = useState({});
+  // const [menuImages, setMenuImages] = useState({});
   const [profilePic, setProfilePic] = useState();
   const [activeCategories, setActiveCategories] = useState([]);
 
@@ -46,7 +45,6 @@ const Home = () => {
   };
 
   const insertIntoSqlite = (data) => {
-    // Insert menu items into SQLite database
     db.transaction((tx) => {
       tx.executeSql(
         `CREATE TABLE IF NOT EXISTS items_menu (
@@ -118,7 +116,6 @@ const Home = () => {
 
   useEffect(() => {
     if (activeCategories.length !== 0) {
-      console.log("activecatchanged");
       db.transaction((tx) => {
         tx.executeSql(
           `SELECT * FROM items_menu WHERE category IN (${activeCategories
@@ -138,8 +135,8 @@ const Home = () => {
     }
   }, [activeCategories]);
 
-  const Item = ({ item }) => {
-    const source = images[item.name];
+  const Item = ({ item, index }) => {
+    const source = images[index];
     return (
       <View style={styles.itemContainer}>
         <View style={styles.itemInfoContainer}>
@@ -148,12 +145,7 @@ const Home = () => {
           <Text style={styles.price}>${item.price}</Text>
         </View>
         <View>
-          <Image
-            style={styles.image}
-            source={{
-              Pasta,
-            }}
-          />
+          <Image style={styles.image} source={source} />
         </View>
       </View>
     );
@@ -170,7 +162,7 @@ const Home = () => {
       />
       <FlatList
         data={menu}
-        renderItem={({ item }) => <Item item={item} />}
+        renderItem={({ item, index }) => <Item item={item} index={index} />}
         keyExtractor={(item, index) => index}
       />
     </SafeAreaView>
@@ -200,7 +192,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 6,
   },
-  description: {},
   price: { fontSize: 18, color: "#060606", marginTop: 8 },
   image: { width: 80, height: 80 },
 });
